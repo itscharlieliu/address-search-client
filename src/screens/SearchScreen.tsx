@@ -1,8 +1,13 @@
 import React, { useState } from "react";
+import styled from "styled-components";
 
 import ResultsDisplay from "../components/ResultsDisplay";
 import SearchBox from "../components/SearchBox";
 import { SearchResult, SEARCH_URL } from "../definitions/SearchApi";
+
+const ScreenContainer = styled.div`
+    width: 960px;
+`;
 
 const SearchScreen = (): JSX.Element => {
     const [results, setResults] = useState<SearchResult[]>([]);
@@ -20,10 +25,10 @@ const SearchScreen = (): JSX.Element => {
     };
 
     return (
-        <div>
+        <ScreenContainer>
             <SearchBox onSearch={handleSearch} />
             <ResultsDisplay results={results} />
-        </div>
+        </ScreenContainer>
     );
 };
 

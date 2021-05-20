@@ -1,24 +1,52 @@
-import { Card, Link, Tooltip, Typography } from "@material-ui/core";
-import { AttachMoney, Bathtub, Home, Hotel } from "@material-ui/icons";
+import { Card, CircularProgress, Link, Typography } from "@material-ui/core";
+import { AttachMoney, Bathtub, Home, Hotel, Info } from "@material-ui/icons";
 import React from "react";
 import styled from "styled-components";
 
+import { COMPACT_WIDTH } from "../definitions/Dimensions";
 import { SearchResult } from "../definitions/SearchApi";
 
 interface ResultsDisplayProps {
-    results: SearchResult[];
+    results: SearchResult[] | null;
+    isLoading: boolean;
 }
 
 interface ResultProps {
     result: SearchResult;
 }
 
-const ResultCard = styled(Card)`
+const ResultsContainer = styled.div`
+    overflow: auto;
+`;
+
+const Alert = styled(Card)`
     padding: 20px;
     margin: 10px;
     width: 90%;
     display: flex;
     flex-direction: row;
+`;
+
+const AlertIcon = styled(Info)`
+    margin-right: 10px;
+`;
+
+const ResultCard = styled(Card)`
+    padding: 20px;
+    margin: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    @media only screen and (max-width: ${COMPACT_WIDTH}px) {
+        & {
+            flex-direction: column;
+        }
+        &&& > * {
+            margin: 10px 0;
+            width: 100%;
+        }
+    }
 `;
 
 const AddressContainer = styled.div`
@@ -53,27 +81,27 @@ const Result = (props: ResultProps): JSX.Element => {
         <Link href={props.result.Url}>
             <ResultCard>
                 <AddressContainer>
-                    <Typography>{props.result.Address}</Typography>
-                    <Typography>
+                    <Typography variant={"h6"}>{props.result.Address}</Typography>
+                    <Typography variant={"subtitle2"}>
                         {`${props.result.City}, ${props.result.StateOrProvince} ${props.result.ZipOrPostalCode}`}
                     </Typography>
                 </AddressContainer>
                 <ShortInfoContainer>
                     <InfoWithIcons>
-                        <Hotel />
+                        <Hotel color={"primary"} />
                         <Typography>{props.result.Beds ? props.result.Beds : "n/a"}</Typography>
-                        <Bathtub />
+                        <Bathtub color={"primary"} />
                         <Typography>{props.result.Baths ? props.result.Baths : "n/a"}</Typography>
                     </InfoWithIcons>
                     <Typography>{props.result.SquareFeet} sq. feet</Typography>
                 </ShortInfoContainer>
                 <ShortInfoContainer>
                     <InfoWithIcons>
-                        <AttachMoney />
+                        <AttachMoney color={"primary"} />
                         {props.result.Price}
                     </InfoWithIcons>
                     <InfoWithIcons>
-                        <Home />
+                        <Home color={"primary"} />
                         {props.result.PropertyType}
                     </InfoWithIcons>
                 </ShortInfoContainer>
@@ -83,12 +111,29 @@ const Result = (props: ResultProps): JSX.Element => {
 };
 
 const ResultsDisplay = (props: ResultsDisplayProps): JSX.Element => {
+    if (props.isLoading) {
+        return <CircularProgress />;
+    }
+
+    if (Array.isArray(props.results) && props.results.length === 0) {
+        return (
+            <Alert>
+                <AlertIcon />
+                <Typography>Unable to find any results</Typography>
+            </Alert>
+        );
+    }
+
+    if (props.results === null) {
+        return <div />;
+    }
+
     return (
-        <div>
+        <ResultsContainer>
             {props.results.map((result: SearchResult, index: number) => (
                 <Result key={"result" + index} result={result} />
             ))}
-        </div>
+        </ResultsContainer>
     );
 };
 

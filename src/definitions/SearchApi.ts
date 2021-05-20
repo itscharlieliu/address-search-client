@@ -1,5 +1,5 @@
 // Currently set to localhost. Change this if the server is hosted somewhere else
-export const SEARCH_URL = "http://127.0.0.1:8080/search";
+export const SEARCH_URL = "http://localhost:8080/search";
 
 // This is the format of the results provided by the backend
 export interface SearchResult {

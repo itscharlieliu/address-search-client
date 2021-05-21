@@ -1,3 +1,4 @@
+import Alert from "@material-ui/lab/Alert";
 import React, { useState } from "react";
 import styled from "styled-components";
 
@@ -23,14 +24,19 @@ const ScreenContainer = styled.div`
 const SearchScreen = (): JSX.Element => {
     const [results, setResults] = useState<SearchResult[] | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<Error | undefined>(undefined);
 
     const handleSearch = (searchValue: string): void => {
         setIsLoading(true);
         fetch(SEARCH_URL + `?query=${searchValue}`)
             .then((response: Response) => response.json())
-            .then((data: SearchResult[]) => setResults(data))
+            .then((data: SearchResult[]) => {
+                setResults(data);
+                setError(undefined);
+            })
             .catch((error: Error) => {
                 console.warn(error);
+                setError(error);
             })
             .finally(() => {
                 setIsLoading(false);
@@ -40,7 +46,8 @@ const SearchScreen = (): JSX.Element => {
     return (
         <ScreenContainer>
             <SearchBox onSearch={handleSearch} />
-            <ResultsDisplay results={results} isLoading={isLoading} />
+            {error ? <Alert severity={"error"}>{error.message}</Alert> : null}
+            <ResultsDisplay results={results} isLoading={isLoading} error={error} />
         </ScreenContainer>
     );
 };

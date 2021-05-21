@@ -1,5 +1,6 @@
 import { Card, CircularProgress, Link, Typography } from "@material-ui/core";
-import { AttachMoney, Bathtub, Home, Hotel, Info } from "@material-ui/icons";
+import { AttachMoney, Bathtub, Home, Hotel } from "@material-ui/icons";
+import Alert from "@material-ui/lab/Alert";
 import React from "react";
 import styled from "styled-components";
 
@@ -9,6 +10,7 @@ import { SearchResult } from "../definitions/SearchApi";
 interface ResultsDisplayProps {
     results: SearchResult[] | null;
     isLoading: boolean;
+    error?: Error;
 }
 
 interface ResultProps {
@@ -17,18 +19,6 @@ interface ResultProps {
 
 const ResultsContainer = styled.div`
     overflow: auto;
-`;
-
-const Alert = styled(Card)`
-    padding: 20px;
-    margin: 10px;
-    width: 90%;
-    display: flex;
-    flex-direction: row;
-`;
-
-const AlertIcon = styled(Info)`
-    margin-right: 10px;
 `;
 
 const ResultCard = styled(Card)`
@@ -116,12 +106,7 @@ const ResultsDisplay = (props: ResultsDisplayProps): JSX.Element => {
     }
 
     if (Array.isArray(props.results) && props.results.length === 0) {
-        return (
-            <Alert>
-                <AlertIcon />
-                <Typography>Unable to find any results</Typography>
-            </Alert>
-        );
+        return <Alert severity={"warning"}>Unable to find any results</Alert>;
     }
 
     if (props.results === null) {

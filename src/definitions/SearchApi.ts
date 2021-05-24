@@ -1,7 +1,7 @@
-const BACKEND_IP = "3.101.26.91";
+// const BACKEND_IP = "3.101.26.91"; // backend on AWS
+const BACKEND_IP = window.location.hostname;
 
 // Currently set to this computer's ip. Change this if the server is hosted somewhere else
-// export const SEARCH_URL = "http://" + window.location.hostname + ":8080/search";
 export const SEARCH_URL = "http://" + BACKEND_IP + ":8080/search";
 
 // This is the format of the results provided by the backend

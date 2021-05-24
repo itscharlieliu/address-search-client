@@ -1,11 +1,13 @@
-import { Card, CircularProgress, Link, Typography } from "@material-ui/core";
+import { Button, Card, CircularProgress, Link, Typography } from "@material-ui/core";
 import { AttachMoney, Bathtub, Home, Hotel } from "@material-ui/icons";
 import Alert from "@material-ui/lab/Alert";
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 
 import { COMPACT_WIDTH } from "../definitions/Dimensions";
 import { SearchResult } from "../definitions/SearchApi";
+
+const RESULTS_PER_PAGE = 20;
 
 interface ResultsDisplayProps {
     results: SearchResult[] | null;
@@ -13,8 +15,20 @@ interface ResultsDisplayProps {
     error?: Error;
 }
 
+interface ResultsPageProps {
+    results: SearchResult[];
+    page: number;
+    resultsPerPage: number;
+}
 interface ResultProps {
     result: SearchResult;
+}
+
+interface PagePickerProps {
+    currPage: number;
+    maxPage: number;
+    setPrevPage: () => void;
+    setNextPage: () => void;
 }
 
 const ResultsContainer = styled.div`
@@ -66,6 +80,24 @@ const InfoWithIcons = styled.div`
     }
 `;
 
+const PagePickerContainer = styled.div`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+`;
+
+const PagePicker = (props: PagePickerProps) => {
+    return (
+        <PagePickerContainer>
+            <Button onClick={props.setPrevPage}>Prev</Button>
+            <Typography>
+                {props.currPage + 1} / {props.maxPage + 1}
+            </Typography>
+            <Button onClick={props.setNextPage}>Next</Button>
+        </PagePickerContainer>
+    );
+};
+
 const Result = (props: ResultProps): JSX.Element => {
     return (
         <Link href={props.result.Url}>
@@ -100,7 +132,28 @@ const Result = (props: ResultProps): JSX.Element => {
     );
 };
 
+const ResultsPage = (props: ResultsPageProps): JSX.Element => {
+    const startIdx = props.page * props.resultsPerPage;
+    const endIdx = Math.min(startIdx + props.resultsPerPage, props.results.length);
+
+    const results = [];
+
+    for (let i = startIdx; i < endIdx; ++i) {
+        results.push(props.results[i]);
+    }
+
+    return (
+        <div>
+            {results.map((result: SearchResult, index: number) => (
+                <Result key={"result" + index} result={result} />
+            ))}
+        </div>
+    );
+};
+
 const ResultsDisplay = (props: ResultsDisplayProps): JSX.Element => {
+    const [currPage, setCurrPage] = useState(0);
+
     if (props.isLoading) {
         return <CircularProgress />;
     }
@@ -113,11 +166,25 @@ const ResultsDisplay = (props: ResultsDisplayProps): JSX.Element => {
         return <div />;
     }
 
+    const maxPage = Math.floor(props.results.length / RESULTS_PER_PAGE);
+
+    const setPrevPage = () => {
+        setCurrPage(currPage === 0 ? 0 : currPage - 1);
+    };
+
+    const setNextPage = () => {
+        if (props.results === null) {
+            setCurrPage(0);
+        }
+
+        setCurrPage(currPage >= maxPage ? maxPage : currPage + 1);
+    };
+
     return (
         <ResultsContainer>
-            {props.results.map((result: SearchResult, index: number) => (
-                <Result key={"result" + index} result={result} />
-            ))}
+            <PagePicker currPage={currPage} maxPage={maxPage} setPrevPage={setPrevPage} setNextPage={setNextPage} />
+            <ResultsPage results={props.results} page={currPage} resultsPerPage={RESULTS_PER_PAGE} />
+            <PagePicker currPage={currPage} maxPage={maxPage} setPrevPage={setPrevPage} setNextPage={setNextPage} />
         </ResultsContainer>
     );
 };

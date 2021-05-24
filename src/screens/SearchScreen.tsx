@@ -1,11 +1,26 @@
 import Alert from "@material-ui/lab/Alert";
-import React, { useState } from "react";
+import React from "react";
+import { connect, ResolveThunks } from "react-redux";
 import styled from "styled-components";
 
 import ResultsDisplay from "../components/ResultsDisplay";
 import SearchBox from "../components/SearchBox";
 import { MAX_WIDTH, MOBILE_WIDTH } from "../definitions/Dimensions";
-import { SearchResult, SEARCH_URL } from "../definitions/SearchApi";
+import { SearchResult } from "../definitions/SearchApi";
+import ApplicationState from "../redux";
+import { fetchSearchResults } from "../redux/search/SearchActions";
+
+interface StateProps {
+    results: SearchResult[] | null;
+    error: Error | null;
+    isSearching: boolean;
+}
+
+interface DispatchProps {
+    fetchSearchResults: typeof fetchSearchResults;
+}
+
+type AllProps = StateProps & ResolveThunks<DispatchProps>;
 
 const ScreenContainer = styled.div`
     width: ${MAX_WIDTH}px;
@@ -21,35 +36,32 @@ const ScreenContainer = styled.div`
     }
 `;
 
-const SearchScreen = (): JSX.Element => {
-    const [results, setResults] = useState<SearchResult[] | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [error, setError] = useState<Error | undefined>(undefined);
-
+const SearchScreen = (props: AllProps): JSX.Element => {
     const handleSearch = (searchValue: string): void => {
-        setIsLoading(true);
-        fetch(SEARCH_URL + `?query=${searchValue}`)
-            .then((response: Response) => response.json())
-            .then((data: SearchResult[]) => {
-                setResults(data);
-                setError(undefined);
-            })
-            .catch((error: Error) => {
-                console.warn(error);
-                setError(error);
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
+        props.fetchSearchResults(searchValue);
     };
 
     return (
         <ScreenContainer>
             <SearchBox onSearch={handleSearch} />
-            {error ? <Alert severity={"error"}>{error.message}</Alert> : null}
-            <ResultsDisplay results={results} isLoading={isLoading} error={error} />
+            {props.error ? <Alert severity={"error"}>{props.error.message}</Alert> : null}
+            <ResultsDisplay
+                results={props.results}
+                isLoading={props.isSearching}
+                error={props.error ? props.error : undefined}
+            />
         </ScreenContainer>
     );
 };
 
-export default SearchScreen;
+const mapStateToProps = (state: ApplicationState): StateProps => ({
+    results: state.search.results,
+    error: state.search.error,
+    isSearching: state.search.isSearching,
+});
+
+const mapDispatchToProps: DispatchProps = {
+    fetchSearchResults,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SearchScreen);
